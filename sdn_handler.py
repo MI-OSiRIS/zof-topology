@@ -32,6 +32,7 @@ class SDN_Handler(object):
             switch = self.util.check_switch_exists(dpid)
         except:
             switch = None
+            dpid   = event['datapath_id']
 
         if switch is None:
             print("Could not find Unis resource for Datapath ID %d, creating new resource" % (dpid))
