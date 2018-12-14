@@ -45,6 +45,7 @@ class UnisUtil(object):
         return None
     
     def create_new_switch(self, event):
+        print(event)
         switch_name = "switch:" + str(event['datapath'].id)
         switch_ip   = event['msg']['endpoint'].split(':')[0]
         
