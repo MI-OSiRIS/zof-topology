@@ -80,10 +80,10 @@ class UnisUtil(object):
         port.properties = {
                     "type":"vport",
                     "vport_number": str(dp_port['port_no']),
-                    "mac_addr":     dp_port['hw_addr'],
-                    "supported":    dp_port['supported'],
-                    "curr_speed":   dp_port['curr_speed'],
-                    "max_speed":    dp_port['max_speed']
+                    "mac_addr":     dp_port['hw_addr']#,
+                    #"supported":    dp_port['supported'],
+                    #"curr_speed":   dp_port['curr_speed'],
+                    #"max_speed":    dp_port['max_speed']
                 }
 
         print("Added port %s to switch %s" % (dp_port['name'], node.name))
