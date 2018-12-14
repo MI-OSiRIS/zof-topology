@@ -27,10 +27,12 @@ class SDN_Handler(object):
         self.link_handler = LinkHandler(self.rt)
 
     def handle_switch_enter(self, event):
+        try:
+            dpid   = event['datapath'].id
+            switch = self.util.check_switch_exists(dpid)
+        except:
+            switch = None
 
-        dpid   = event['datapath'].id
-        switch = self.util.check_switch_exists(dpid)
-        
         if switch is None:
             print("Could not find Unis resource for Datapath ID %d, creating new resource" % (dpid))
             switch = self.util.create_new_switch(event) 
