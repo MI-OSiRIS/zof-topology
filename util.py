@@ -46,7 +46,7 @@ class UnisUtil(object):
     
     def create_new_switch(self, event):
         print(event)
-        switch_name = "switch:" + str(event['datapath'].id)
+        switch_name = "switch:" + str(event['datapath'])#.id)
         switch_ip   = event['msg']['endpoint'].split(':')[0]
         
         switch = OFSwitchNode({"name":switch_name})
@@ -61,10 +61,10 @@ class UnisUtil(object):
         port.properties = {
                     "type":"vport",
                     "vport_number": str(dp_port['port_no']),
-                    "mac_addr":     dp_port['hw_addr'],
-                    "supported":    dp_port['supported'],
-                    "curr_speed":   dp_port['curr_speed'],
-                    "max_speed":    dp_port['max_speed']
+                    "mac_addr":     dp_port['hw_addr']
+                    #"supported":    dp_port['supported'],
+                    #"curr_speed":   dp_port['curr_speed'],
+                    #"max_speed":    dp_port['max_speed']
                 }
         
         print("Updated port properties")
