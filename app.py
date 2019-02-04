@@ -151,7 +151,7 @@ LLDP_FLOW = zof.compile('''
     table_id: 0
     priority: 0
     match:
-        - field: ETH_TYPE
+      - field: ETH_TYPE
         value: 0x88cc
     instructions:
       - instruction: APPLY_ACTIONS
