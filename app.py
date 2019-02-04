@@ -152,7 +152,7 @@ LLDP_FLOW = zof.compile('''
     priority: 6000 
     match:
       - field: ETH_TYPE
-        value: 35020 
+        value: 88cc 
     instructions:
       - instruction: APPLY_ACTIONS
         actions:
