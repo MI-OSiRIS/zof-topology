@@ -3,8 +3,8 @@ from unis.models import *
 
 class RegistrationHandler(object):
 
-    def __init__(self, local_runtime_url, remote_runtime_url):
-        self.local_rt  = Runtime(local_runtime_url, name="Local")
+    def __init__(self, local_runtime, remote_runtime_url):
+        self.local_rt  = local_runtime 
         self.remote_rt = Runtime(remote_runtime_url, name="Remote") 
 
     def check_local_topology(self, topology_name):
@@ -36,12 +36,14 @@ class RegistrationHandler(object):
             self.local_rt.insert(local_domain, commit=True)
             self.local_rt.flush()
         
-        if local_domain in local_topology.domains:
-            print("Domain already in local topology")
-        else:
-            print("Domain not in local topology, adding..")
-            local_topology.domains.append(local_domain)
-            self.local_rt.flush()
+        for domain in local_topology.domains:
+            if domain.id == local_domain.id:
+                return local_domain
+
+
+        print("Domain not in local topology, adding..")
+        local_topology.domains.append(local_domain)
+        self.local_rt.flush()
 
         return local_domain
 

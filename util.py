@@ -9,7 +9,9 @@ class UnisUtil(object):
     def __init__(self, runtime):
         self.rt = runtime
 
+
     def check_switch_exists(self, dpid):
+        print("Checking for switch -", "switch:"+str(dpid))
         switch = self.rt.nodes.first_where(lambda n: n.name == ("switch:" + str(dpid)))
         print(switch.to_JSON())
         return switch
@@ -173,7 +175,8 @@ class UnisUtil(object):
         for n in domain.nodes:
             if n.id == node.id:
                 result = node
-                print("Found resourc in local domain")
+                print("Found node resource in local domain")
+                return node
         if result is None:
             print("Resource not in local domain, adding it now.")
             domain.nodes.append(node)
@@ -183,10 +186,14 @@ class UnisUtil(object):
 
     def check_link_in_domain(self, link, domain):
         result = None
-        for l in domain.links: 
-            if l.id == link.id:
+         
+        print(link.to_JSON())
+        print(domain.to_JSON())
+        for l in domain.links:      
+            if l.name == link.name:
                 result = link
-                print("Found resource in local domain")
+                print("Found link resource in local domain")
+                return link
         if result is None:
             print("Resource not in local domain, adding it now.")
             domain.links.append(link)

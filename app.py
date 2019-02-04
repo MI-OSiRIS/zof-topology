@@ -87,8 +87,8 @@ async def start(_):
         Domain Name: " + conf['domain'] +"\n\
         REST API Endpoint: "+ conf['wsapi'])
 
-    # Registration check/update domain/topology resources.
-    RegHandler = RegistrationHandler(conf['unis'], conf['remote'])
+    # Registration check/update domain/topology resources. 
+    RegHandler = RegistrationHandler(SDN.rt, conf['remote'])
     
     APP.logger.info("Checking Local Topology and Domain")
     local_topology      = RegHandler.check_local_topology("Local Topology")

@@ -11,12 +11,14 @@ class LinkHandler(object):
         link = self.rt.links.first_where(lambda l: l.endpoints[0] == port_a and l.endpoints[1] == port_b)
         
         if link is not None:
+            print(link.id)
             print("Found link %s, connecting ports %s and %s." % (link.name, port_a.name, port_b.name))
             return link
 
         link = self.rt.links.first_where(lambda l: l.endpoints[1] == port_a and l.endpoints[0] == port_b)
 
         if link is not None:
+            print(link.id)
             print("Found link %s, connecting ports %s and %s." % (link.name, port_a.name, port_b.name))
             return link
         

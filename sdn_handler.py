@@ -42,6 +42,7 @@ class SDN_Handler(object):
         
         print("Checking ports")
         self.util.check_switch_ports(switch, event)
+        print(self.local_domain.to_JSON())
         self.util.check_node_in_domain(switch, self.local_domain)
 
         self.rt.flush()
@@ -59,7 +60,7 @@ class SDN_Handler(object):
        
         #node_port.touch()
         node.touch()
-        
+        print(node.to_JSON()) 
         self.util.check_node_in_domain(node, self.local_domain)
        
         #self.rt.flush() 
@@ -83,11 +84,13 @@ class SDN_Handler(object):
             self.rt.insert(link, commit=True)
             
             print("New link created between %s and %s" % (switch_port.name, node_port.name))
-        self.rt.flush()
-        link.touch()
+        
+        
+        self.rt.flush() 
+        link.touch()  
         self.util.check_link_in_domain(link, self.local_domain)
         
-
+        
         print("Finished LLDP Update.")
 
         return
