@@ -122,7 +122,45 @@ def lldp_packet_in(event):
 @APP.message('channel_up')
 def channel_up(event):
     #APP.logger.info("switch %s Connected", event['datapath_id'])  
+    print("TABLE_MISS_FLOW")
+    TABLE_MISS_FLOW.send()
+    print("LLDP_FLOW")
+    LLDP_FLOW.send()
     SDN.handle_switch_enter(event)
+
+TABLE_MISS_FLOW = zof.compile('''
+  # Add permanent table miss flow entry to table 0
+  type: FLOW_MOD
+  msg:
+    command: ADD
+    table_id: 0
+    priority: 0
+    instructions:
+      - instruction: APPLY_ACTIONS
+        actions:
+          - action: OUTPUT
+            port_no: CONTROLLER
+            max_len: NO_BUFFER
+''')
+
+LLDP_FLOW = zof.compile('''
+  # Add permanent table miss flow entry to table 0
+  type: FLOW_MOD
+  msg:
+    command: ADD
+    table_id: 0
+    priority: 0
+    match:
+        - field: ETH_TYPE
+        value: 0x88cc
+    instructions:
+      - instruction: APPLY_ACTIONS
+        actions:
+          - action: OUTPUT
+            port_no: CONTROLLER
+            max_len: NO_BUFFER
+''')
+
 
 
 if __name__ == '__main__': 
