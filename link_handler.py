@@ -1,4 +1,5 @@
 from unis import Runtime
+from unis.models import Link
 
 class LinkHandler(object):
     def __init__(self, runtime):
@@ -27,11 +28,10 @@ class LinkHandler(object):
 
         new_link = Link({
                 "name": port_a.id + ":" + port_b.id,
-                "directed": False
+                "directed": False,
+                "endpoints": [port_a, port_b]
             })
 
-        new_link.endpoints = [port_a, port_b]
-
-        self.rt.insert(link, commit=True)
-
+        new_link.endpoints = [port_a, port_b] 
+        
         return new_link

@@ -33,10 +33,13 @@ class UnisUtil(object):
         return
 
     def port_in_switch(self, node, port_name, port_number):
-        for p in node.ports:
-            if p.name == port_name and p.properties.vport_number == str(port_number):
-                return p
-        return None
+        try:
+            for p in node.ports:
+                if p.name == port_name and p.properties.vport_number == str(port_number):
+                    return p
+            return None
+        except: 
+            return None
 
     def check_port_in_node_by_name(self, node, port_name):
         for p in node.ports:
@@ -46,10 +49,10 @@ class UnisUtil(object):
     
     def create_new_switch(self, event):
         print(event)
-        switch_name = "switch:" + str(event['datapath'])#.id)
+        switch_name = "switch:" + str(event['datapath'].id)
         switch_ip   = event['msg']['endpoint'].split(':')[0]
         
-        switch = OFSwitchNode({"name":switch_name})
+        switch = OFSwitchNode({"name":switch_name, "datapath_id":event['datapath'].id})
         switch.properties.mgmtaddr = switch_ip
 
         self.rt.insert(switch, commit=True)
@@ -86,15 +89,17 @@ class UnisUtil(object):
                     #"max_speed":    dp_port['max_speed']
                 }
 
+        self.rt.insert(port, commit=True)
+        node.ports.append(port)
         print("Added port %s to switch %s" % (dp_port['name'], node.name))
         return port
 
-    def check_lldp_msg(self, msg):
+    def check_lldp_msg(self, msg, dpid):
         node_name = msg['pkt']['x_lldp_sys_name']
         print("Message from: ", node_name)
         
-        node = self.rt.nodes.first_where({"name":node_name})
-
+        node = self.rt.nodes.first_where({"name": node_name})
+        
         if node:
             print("Found node in UNIS")
         else:
@@ -105,10 +110,11 @@ class UnisUtil(object):
     
     def create_node(self, msg):
         
-        new_node = Node({"name":dp_msg['pkt']['x_lldp_sys_name'],
+        new_node = Node({"name":msg['pkt']['x_lldp_sys_name'],
                          "description":"Discovered by ZOF Controller"})
 
-        rt.insert(new_node, commit=True)
+        self.rt.insert(new_node, commit=True)
+        self.rt.flush()
 
         return new_node
 
@@ -121,10 +127,14 @@ class UnisUtil(object):
         if port is not None:
             print("Found port %s in node %s" % (port.name, node.name))
         else:
-            port = self.rt.ports.first_where(lambda p: p.name == port_name)
-            
+
+            try:
+                port = self.rt.ports.first_where(lambda p: p.name == port_name)
+            except:
+                port = None
+
             if port is None:
-                print("No Port found. Adding port %s to node %s" (port_name, node.name)) 
+                print("No Port found. Adding port %s to node %s" % (str(port_name), str(node.name))) 
                 port = Port({
                     "name": port_name
                     })
@@ -149,11 +159,14 @@ class UnisUtil(object):
         return port
     
     def find_port_in_node_by_port_num(self, node, port_num):
-        for p in node.ports: 
-            if str(p.properties.vport_number) == str(port_num):
-                print("Found port in switch", p.properties.vport_number)
-                return p
-        return None
+        try:
+            for p in node.ports: 
+                if str(p.properties.vport_number) == str(port_num):
+                    print("Found port in switch", p.properties.vport_number)
+                    return p
+            return None
+        except:
+            return None
 
     def check_node_in_domain(self, node, domain):
         result = None
@@ -165,6 +178,7 @@ class UnisUtil(object):
             print("Resource not in local domain, adding it now.")
             domain.nodes.append(node)
             self.rt.flush()
+
         return node
 
     def check_link_in_domain(self, link, domain):

@@ -24,7 +24,7 @@ class SDN_Handler(object):
         
         self.switches = []
         self.util         = UnisUtil(self.rt)
-        self.link_handler = LinkHandler(self.rt)
+        self.link_handler = LinkHandler(self.rt) 
 
     def handle_switch_enter(self, event):
         try:
@@ -53,17 +53,17 @@ class SDN_Handler(object):
         in_port = event['msg']['in_port']
 
         # checks to see if a node exists, and the corresponding port discovered via lldp
-        node = self.util.check_lldp_msg(event['msg'])
+        node = self.util.check_lldp_msg(event['msg'], event['datapath_id'])
         port_name = node.name + ":" + event['msg']['pkt']['x_lldp_port_descr']
         node_port = self.util.check_update_node(node, event['msg'])
        
-        node_port.touch()
+        #node_port.touch()
         node.touch()
         
         self.util.check_node_in_domain(node, self.local_domain)
-        
-        self.rt.flush() 
-
+       
+        #self.rt.flush() 
+        print("DATAPATH ID: ", event['datapath_id'])
         switch_node = self.rt.nodes.first_where({"name": "switch:" + str(event['datapath'].id)})
         switch_port = self.util.find_port_in_node_by_port_num(switch_node, in_port)
 
@@ -78,11 +78,15 @@ class SDN_Handler(object):
         link = self.link_handler.check_link_connecting_ports(switch_port, node_port)
 
         if link is None:
-            link = self.link_handler.create_new_link(port_a, port_b)
-
+            link = self.link_handler.create_new_link(switch_port, node_port)
+            pprint(link.to_JSON())
+            self.rt.insert(link, commit=True)
+            
+            print("New link created between %s and %s" % (switch_port.name, node_port.name))
+        self.rt.flush()
         link.touch()
         self.util.check_link_in_domain(link, self.local_domain)
-        self.rt.flush()
+        
 
         print("Finished LLDP Update.")
 

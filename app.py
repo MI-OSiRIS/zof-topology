@@ -77,6 +77,7 @@ async def start(_):
     conf.update(**{k:v for k,v in APP.args.__dict__.items() if v is not None})
     
     APP.http_endpoint = conf['wsapi'] 
+    APP.website = None 
     warnings.filterwarnings('ignore')
 
     APP.logger.info("\nStarting ZOF Topology Controller\n \
@@ -104,7 +105,7 @@ async def start(_):
     RegHandler.clean_up()
 
     SDN.domain_name = APP.args.domain
-    SDN.local_domain = SDN.rt.domains.first_where({"id":local_domain.id})
+    SDN.local_domain = local_domain
 
     await rest_api.WEB.start(APP.http_endpoint)
 
