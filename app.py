@@ -113,17 +113,30 @@ async def start(_):
 @APP.event('stop')
 async def stop(_):
         await rest_api.WEB.stop()
-
+'''
 @APP.message('packet_in', eth_type=0x88cc)
 def lldp_packet_in(event):
     #APP.logger.info("LLDP message %r", event)
     SDN.handle_lldp(event)
     return
-
+'''
 @APP.message('packet_in')
 def generic_packet_handler(event):
-    print("PACKET IN EVENT")
+    
     pprint(event)
+    
+    pkt      = event['msg']['pkt']
+    
+    APP.logger.info("-- PACKET IN EVENT --")
+        
+    APP.logger.info("\n     eth_src: %s\n\
+        eth_dst: %s\n\
+        eth_type: %d", pkt['eth_src'], pkt['eth_dst'], pkt['eth_type'])
+    
+    if pkt['eth_type'] == int(35020):
+        APP.logger.info("Recieved LLDP Packet")
+        SDN.handle_lldp(event)
+    
     return
 
 @APP.message('channel_up')
