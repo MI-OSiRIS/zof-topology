@@ -36,11 +36,12 @@ class UnisUtil(object):
 
     def port_in_switch(self, node, port_name, port_number):
         try:
-            for p in node.ports:
+            for p in node.ports: 
                 if p.name == port_name and p.properties.vport_number == str(port_number):
                     return p
             return None
-        except: 
+        except e:
+            print("EXCEPTION ADDING PORT", e)
             return None
 
     def check_port_in_node_by_name(self, node, port_name):
@@ -79,7 +80,7 @@ class UnisUtil(object):
     def add_switch_port(self, node, dp_port):
         
         port = Port({
-            "name": "switch: " + node.name + ":" + dp_port['name']
+            "name": node.name + ":" + dp_port['name']
             })
 
         port.properties = {

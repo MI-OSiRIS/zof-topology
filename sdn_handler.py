@@ -76,8 +76,7 @@ class SDN_Handler(object):
         link = self.link_handler.check_link_connecting_ports(switch_port, node_port)
 
         if link is None:
-            link = self.link_handler.create_new_link(switch_port, node_port)
-            pprint(link.to_JSON())
+            link = self.link_handler.create_new_link(switch_port, node_port) 
             self.rt.insert(link, commit=True)
             
             print("New link created between %s and %s" % (switch_port.name, node_port.name))
