@@ -5,6 +5,7 @@ import json
 
 from zof.demo import rest_api
 
+from pprint import pprint
 from sdn_handler import *
 from registration_handler import *
 from configparser import ConfigParser
@@ -119,6 +120,12 @@ def lldp_packet_in(event):
     SDN.handle_lldp(event)
     return
 
+@APP.message('packet_in')
+def generic_packet_handler(event):
+    print("PACKET IN EVENT")
+    pprint(event)
+    return
+
 @APP.message('channel_up')
 def channel_up(event):
     #APP.logger.info("switch %s Connected", event['datapath_id'])  
@@ -151,8 +158,8 @@ LLDP_FLOW = zof.compile('''
     table_id: 0
     priority: 6000 
     match:
-      - field: ETH_TYPE
-        value: 88cc 
+      - field: ETH_TYPE 
+        value: 0x88cc 
     instructions:
       - instruction: APPLY_ACTIONS
         actions:
