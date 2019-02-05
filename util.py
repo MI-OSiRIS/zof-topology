@@ -187,8 +187,6 @@ class UnisUtil(object):
     def check_link_in_domain(self, link, domain):
         result = None
          
-        print(link.to_JSON())
-        print(domain.to_JSON())
         for l in domain.links:      
             if l.name == link.name:
                 result = link

@@ -108,11 +108,13 @@ async def start(_):
     SDN.domain_name = APP.args.domain
     SDN.local_domain = local_domain
 
+    APP.logger.info("Starting REST API @ %s", APP.http_endpoint)
     await rest_api.WEB.start(APP.http_endpoint)
 
 @APP.event('stop')
 async def stop(_):
         await rest_api.WEB.stop()
+
 '''
 @APP.message('packet_in', eth_type=0x88cc)
 def lldp_packet_in(event):
@@ -120,12 +122,11 @@ def lldp_packet_in(event):
     SDN.handle_lldp(event)
     return
 '''
+
 @APP.message('packet_in')
 def generic_packet_handler(event):
-    
-    pprint(event)
-    
-    pkt      = event['msg']['pkt']
+        
+    pkt = event['msg']['pkt']
     
     APP.logger.info("-- PACKET IN EVENT --")
         
@@ -141,11 +142,15 @@ def generic_packet_handler(event):
 
 @APP.message('channel_up')
 def channel_up(event):
-    #APP.logger.info("switch %s Connected", event['datapath_id'])  
-    print("TABLE_MISS_FLOW")
+    
+    APP.logger.info("switch %s Connected", event['datapath_id'])  
+    
+    APP.logger.info("Inserting TABLE_MISS_FLOW")
     TABLE_MISS_FLOW.send()
-    print("LLDP_FLOW")
+
+    APP.logger.info("Inserting LLDP_FLOW")
     LLDP_FLOW.send()
+    
     SDN.handle_switch_enter(event)
 
 TABLE_MISS_FLOW = zof.compile('''

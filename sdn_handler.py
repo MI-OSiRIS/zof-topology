@@ -41,8 +41,7 @@ class SDN_Handler(object):
             print("Found Unis resource for Datapath ID %s." % (switch.datapathid))
         
         print("Checking ports")
-        self.util.check_switch_ports(switch, event)
-        print(self.local_domain.to_JSON())
+        self.util.check_switch_ports(switch, event) 
         self.util.check_node_in_domain(switch, self.local_domain)
 
         self.rt.flush()
@@ -59,11 +58,9 @@ class SDN_Handler(object):
         node_port = self.util.check_update_node(node, event['msg'])
        
         #node_port.touch()
-        node.touch()
-        print(node.to_JSON()) 
+        node.touch() 
         self.util.check_node_in_domain(node, self.local_domain)
        
-        #self.rt.flush() 
         print("DATAPATH ID: ", event['datapath_id'])
         switch_node = self.rt.nodes.first_where({"name": "switch:" + str(event['datapath'].id)})
         switch_port = self.util.find_port_in_node_by_port_num(switch_node, in_port)
@@ -84,7 +81,6 @@ class SDN_Handler(object):
             self.rt.insert(link, commit=True)
             
             print("New link created between %s and %s" % (switch_port.name, node_port.name))
-        
         
         self.rt.flush() 
         link.touch()  
