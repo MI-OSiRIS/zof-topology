@@ -68,11 +68,18 @@ SDN = SDN_Handler(runtime_url="http://iu-ps01.osris.org:8888",
 # - Containerize
 # - README
 
+
+'''
+    To listen to a specific endpoint rather than everything that is pointed to the controller, add
+    --listen-endpoint flag to the run statement.
+
+    ex) python3.6 app.py -c my_config.ini --listen-endpoints [::]:6653
+'''
 @APP.event('start')
 async def start(_):
 
     conf = {'unis': 'http://localhost:8888', 'wsapi': '127.0.0.1:8080', 'remote': 'http://localhost:8888',
-                        'topology': 'Local Topology', 'domain': 'ZOF Domain'}
+            'topology': 'Local Topology', 'domain': 'ZOF Domain', 'of_port': 6653}
 
     conf.update(**_read_config(APP.args.config))
     conf.update(**{k:v for k,v in APP.args.__dict__.items() if v is not None})
@@ -87,6 +94,7 @@ async def start(_):
         Remote Topology Name: " + conf['topology'] +"\n\
         Domain Name: " + conf['domain'] +"\n\
         REST API Endpoint: "+ conf['wsapi'])
+
 
     # Registration check/update domain/topology resources. 
     RegHandler = RegistrationHandler(SDN.rt, conf['remote'])
