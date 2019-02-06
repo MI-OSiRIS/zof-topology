@@ -153,16 +153,16 @@ def channel_up(event):
     
     APP.logger.info("switch %s Connected", event['datapath_id'])  
     
-    APP.logger.info("Inserting TABLE_MISS_FLOW")
-    TABLE_MISS_FLOW.send()
+    APP.logger.info("Inserting OUTPUT_NORMAL_FLOW")
+    OUTPUT_NORMAL_FLOW.send()
 
     APP.logger.info("Inserting LLDP_FLOW")
     LLDP_FLOW.send()
     
     SDN.handle_switch_enter(event)
 
-TABLE_MISS_FLOW = zof.compile('''
-  # Add permanent table miss flow entry to table 0
+OUTPUT_NORMAL_FLOW = zof.compile('''
+  # Add permanent flow entry to table 0
   type: FLOW_MOD
   msg:
     command: ADD
@@ -172,7 +172,7 @@ TABLE_MISS_FLOW = zof.compile('''
       - instruction: APPLY_ACTIONS
         actions:
           - action: OUTPUT
-            port_no: CONTROLLER
+            port_no: NORMAL 
             max_len: NO_BUFFER
 ''')
 
