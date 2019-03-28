@@ -53,9 +53,6 @@ def _read_config(file_path):
 APP = zof.Application("TopologyController",
         arg_parser=_arg_parser())
 
-SDN = SDN_Handler(runtime_url="http://iu-ps01.osris.org:8888", 
-        domain_name="Zof")
-
 # TODO
 # - Read arguments from config file/command line. (done-ish, need to read from file too)
 # - Explicitly declare listening endpoint.
@@ -67,6 +64,7 @@ SDN = SDN_Handler(runtime_url="http://iu-ps01.osris.org:8888",
 # - Get asyncio ssl warnings from ZoF to go away (done)
 # - Containerize
 # - README
+
 
 
 '''
@@ -84,7 +82,11 @@ async def start(_):
     conf.update(**_read_config(APP.args.config))
     conf.update(**{k:v for k,v in APP.args.__dict__.items() if v is not None})
     
-    APP.http_endpoint = conf['wsapi'] 
+    APP.http_endpoint = conf['wsapi']
+
+    APP.SDN = SDN_Handler(runtime_url=conf['unis'],
+        domain_name=conf['domain'])
+
     APP.website = None 
     warnings.filterwarnings('ignore')
 
@@ -97,7 +99,7 @@ async def start(_):
 
 
     # Registration check/update domain/topology resources. 
-    RegHandler = RegistrationHandler(SDN.rt, conf['remote'])
+    RegHandler = RegistrationHandler(APP.SDN.rt, conf['remote'])
     
     APP.logger.info("Checking Local Topology and Domain")
     local_topology      = RegHandler.check_local_topology("Local Topology")
@@ -113,8 +115,8 @@ async def start(_):
 
     RegHandler.clean_up()
 
-    SDN.domain_name = APP.args.domain
-    SDN.local_domain = local_domain
+    APP.SDN.domain_name = APP.args.domain
+    APP.SDN.local_domain = local_domain
 
     APP.logger.info("Starting REST API @ %s", APP.http_endpoint)
     await rest_api.WEB.start(APP.http_endpoint)
@@ -144,7 +146,7 @@ def generic_packet_handler(event):
     
     if pkt['eth_type'] == int(35020):
         APP.logger.info("Recieved LLDP Packet")
-        SDN.handle_lldp(event)
+        APP.SDN.handle_lldp(event)
     
     return
 
@@ -159,7 +161,7 @@ def channel_up(event):
     APP.logger.info("Inserting LLDP_FLOW")
     LLDP_FLOW.send()
     
-    SDN.handle_switch_enter(event)
+    APP.SDN.handle_switch_enter(event)
 
 OUTPUT_NORMAL_FLOW = zof.compile('''
   # Add permanent flow entry to table 0

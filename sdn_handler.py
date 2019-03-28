@@ -69,7 +69,12 @@ class SDN_Handler(object):
             print("Could not find port in Switch. Continuing.")
             return
         if node_port is None:
-            print("Could not find port in Node. Coninuting.")
+            print("Could not find port in Node. Creating..")
+            node_port = Port({"name":port_name, "properties":{"type":"virtual"}})
+            self.rt.insert(node_port, commit=True)
+            node.ports.append(node_port)
+            self.domain.ports.append(node_port)
+            self.rt.flush()
             return
 
         # checks to see if a link between the src/dst ports via lldp exist.
