@@ -55,7 +55,7 @@ class UnisUtil(object):
         switch_name = "switch:" + str(event['datapath'].id)
         switch_ip   = event['msg']['endpoint'].split(':')[0]
         
-        switch = OFSwitchNode({"name":switch_name, "datapath_id":event['datapath'].id})
+        switch = OFSwitchNode({"name":switch_name, "datapathid":event['datapath'].id})
         switch.properties.mgmtaddr = switch_ip
 
         self.rt.insert(switch, commit=True)
