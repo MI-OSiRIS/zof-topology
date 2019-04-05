@@ -184,7 +184,7 @@ LLDP_FLOW = zof.compile('''
   msg:
     command: ADD
     table_id: 0
-    priority: 0 
+    priority: 1 
     match:
       - field: ETH_TYPE 
         value: 35020 
