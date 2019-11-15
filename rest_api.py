@@ -1,6 +1,6 @@
 import zof
 
-import .config
+import config
 
 from zof.http import HttpServer
 from zof.pktview import pktview_from_list, pktview_to_list
