@@ -1,57 +1,15 @@
 import zof
-import argparse
 import warnings
-import json 
+import json
 
-from zof.demo import rest_api
+import .config
 
 from pprint import pprint
 from sdn_handler import *
 from registration_handler import *
-from configparser import ConfigParser
 from collections import defaultdict
 
-def _arg_parser():
-    parser = argparse.ArgumentParser(description="ZOF Topology Controller")
-    parser.add_argument('-u','--unis',type=str, help="Local Unis to store domain topology resources.") 
-    parser.add_argument('-r','--remote',type=str, help="Remote Unis url to register discovered topology")
-    parser.add_argument('-d','--domain',type=str,  help="Name of domain resource for topology")
-    parser.add_argument('-t','--topology',type=str,  help="Name of the topology object in the remote UNIS to register discovered domain to")
-    parser.add_argument('-w','--wsapi',type=str,  help="Endpoint to server rest api. Default 127.0.0.1:8080")
-    parser.add_argument('-c','--config',type=str,  help="Path to configuration file.")
-    return parser
-
-'''
-        Read from Config File helper
-'''
-def _read_config(file_path):
-    if not file_path:
-        return {}
-    parser = ConfigParser(allow_no_value=True)
-    
-    try:
-        parser.read(file_path)
-    except Exception:
-        raise AttributeError("INVALID FILE PATH FOR STATIC RESOURCE INI.")
-        return
-
-    config = parser['CONFIG']
-    try:
-        result = {'unis': str(config['unis']),
-                  'remote': str(config['remote']),
-                  'wsapi': str(config['wsapi']),
-                  'topology': str(config['topology']),
-                  'domain': str(config['domain'])}
-        return result
-
-    except Exception as e:
-        print(e)
-        raise AttributeError('Error in config file, please ensure file is '
-                             'formatted correctly and contains values needed.')
-
-        
-APP = zof.Application("TopologyController",
-        arg_parser=_arg_parser())
+APP = zof.Application("TopologyController")
 
 # TODO
 # - Read arguments from config file/command line. (done-ish, need to read from file too)
@@ -75,14 +33,12 @@ APP = zof.Application("TopologyController",
 '''
 @APP.event('start')
 async def start(_):
-
-    conf = {'unis': 'http://localhost:8888', 'wsapi': '127.0.0.1:8080', 'remote': 'http://localhost:8888',
-            'topology': 'Local Topology', 'domain': 'ZOF Domain', 'of_port': 6653}
-
-    conf.update(**_read_config(APP.args.config))
-    conf.update(**{k:v for k,v in APP.args.__dict__.items() if v is not None})
-    
-    APP.http_endpoint = conf['wsapi']
+    conf = config.generate_config({'unis': 'http://localhost:8888',
+                                   'wsapi': '127.0.0.1:8080',
+                                   'remote': 'http://localhost:8888',
+                                   'topology': 'Local Topology',
+                                   'domain': 'ZOF Domain',
+                                   'of_port': 6653})
 
     APP.SDN = SDN_Handler(runtime_url=conf['unis'],
         domain_name=conf['domain'])
@@ -118,8 +74,8 @@ async def start(_):
     APP.SDN.domain_name = APP.args.domain
     APP.SDN.local_domain = local_domain
 
-    APP.logger.info("Starting REST API @ %s", APP.http_endpoint)
-    await rest_api.WEB.start(APP.http_endpoint)
+    #APP.logger.info("Starting REST API @ %s", APP.http_endpoint)
+    #await rest_api.WEB.start(APP.http_endpoint)
 
 @APP.event('stop')
 async def stop(_):
