@@ -37,6 +37,7 @@ builtins.__import__ = patch_import
 import zof
 import warnings
 import json
+import argparse
 
 import config, rest_api
 
@@ -45,7 +46,14 @@ from sdn_handler import *
 from registration_handler import *
 from collections import defaultdict
 
-APP = zof.Application("TopologyController")
+parser = argparse.ArgumentParser(description="OPEN ZOF Topology Controller", add_help=False)
+parser.add_argument('-u','--unis',type=str, help="Local Unis to store domain topology resources.") 
+parser.add_argument('-r','--remote',type=str, help="Remote Unis url to register discovered topology")
+parser.add_argument('-d','--domain',type=str,  help="Name of domain resource for topology")
+parser.add_argument('-t','--topology',type=str,  help="Name of the topology object in the remote UNIS to register discovered domain to")
+parser.add_argument('-c','--config',type=str,  help="Path to configuration file.")
+
+APP = zof.Application("TopologyController", arg_parser=parser)
 
 # TODO
 # - Read arguments from config file/command line. (done-ish, need to read from file too)
@@ -70,11 +78,10 @@ APP = zof.Application("TopologyController")
 @APP.event('start')
 async def start(_):
     conf = config.generate_config({'unis': 'http://localhost:8888',
-                                   'wsapi': '127.0.0.1:8080',
                                    'remote': 'http://localhost:8888',
                                    'topology': 'Local Topology',
                                    'domain': 'ZOF Domain',
-                                   'of_port': 6653})
+                                   'of_port': 6653}, APP.args.__dict__)
 
     APP.SDN = SDN_Handler(runtime_url=conf['unis'],
         domain_name=conf['domain'])
@@ -86,8 +93,7 @@ async def start(_):
         Local UNIS: " + conf['unis'] + "\n \
         Remote UNIS: " + conf['remote'] +"\n \
         Remote Topology Name: " + conf['topology'] +"\n\
-        Domain Name: " + conf['domain'] +"\n\
-        REST API Endpoint: "+ conf['wsapi'])
+        Domain Name: " + conf['domain'])
 
 
     # Registration check/update domain/topology resources. 

@@ -1,21 +1,19 @@
-import zof
+import argparse, zof
 
 import config
 
 from zof.http import HttpServer
 from zof.pktview import pktview_from_list, pktview_to_list
 
-APP = zof.Application('rest_api')
+parser = argparse.ArgumentParser(description="OPEN ZOF Topology Controller", add_help=False)
+parser.add_argument('-w','--wsapi',type=str,  help="Endpoint to server rest api. Default 127.0.0.1:8080")
+
+APP = zof.Application('rest_api', arg_parser=parser)
 WEB = HttpServer(logger=APP.logger)
 
 @APP.event('start')
 async def start(_):
-    conf = config.generate_config({'unis': 'http://localhost:8888',
-                                   'wsapi': '127.0.0.1:8080',
-                                   'remote': 'http://localhost:8888',
-                                   'topology': 'Local Topology',
-                                   'domain': 'ZOF Domain',
-                                   'of_port': 6653})
+    conf = config.generate_config({'wsapi': '127.0.0.1:8080'}, APP.args.__dict__)
     APP.logger.info("Starting REST API @ %s", conf['wsapi'])
     await WEB.start(conf['wsapi'])
 
