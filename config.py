@@ -29,7 +29,4 @@ def _read_config(file_path):
                              'formatted correctly and contains values needed.')
 
 def generate_config(default, cmd):
-    print("generating config")
-    print(default)
-    print(cmd)
-    return {**default, **_read_config(cmd.get('config', None)), **cmd}
+    return {**default, **_read_config(cmd.get('config', None)), **{k:v for k,v in cmd.items() if f is not None}}
