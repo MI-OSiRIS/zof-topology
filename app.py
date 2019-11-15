@@ -18,7 +18,7 @@ def _patch(self, message):
         data_hex = '%s...' % data_hex[:100]
     LOGGER.warning(
         'Alert: %s data=%s (%d bytes) [conn_id=%s, datapath_id=%s, xid=%d]',
-        msg.get('alert', '#UNKNOWN#'), data_hex, data_len, message.get('conn_id'. "#UNKNOWN#"),
+        msg.get('alert', '#UNKNOWN#'), data_hex, data_len, message.get('conn_id', "#UNKNOWN#"),
         message.get('datapath_id', "#UNKNOWN#"), msg_xid)
     
     for app in self.apps:
