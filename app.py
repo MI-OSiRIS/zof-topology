@@ -38,8 +38,7 @@ import zof
 import warnings
 import json
 
-
-import .config
+import config
 
 from pprint import pprint
 from sdn_handler import *
