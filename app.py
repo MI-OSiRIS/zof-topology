@@ -38,7 +38,7 @@ import zof
 import warnings
 import json
 
-import config
+import config, rest_api
 
 from pprint import pprint
 from sdn_handler import *
@@ -109,13 +109,6 @@ async def start(_):
 
     APP.SDN.domain_name = APP.args.domain
     APP.SDN.local_domain = local_domain
-
-    #APP.logger.info("Starting REST API @ %s", APP.http_endpoint)
-    #await rest_api.WEB.start(APP.http_endpoint)
-
-@APP.event('stop')
-async def stop(_):
-        await rest_api.WEB.stop()
 
 '''
 @APP.message('packet_in', eth_type=0x88cc)
