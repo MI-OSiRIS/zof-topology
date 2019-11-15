@@ -24,7 +24,7 @@ def _patch(self, message):
     for app in self.apps:
         app.handle_event(message, 'message')
 
-def patch_inport(*args, **kwargs):
+def patch_import(*args, **kwargs):
     m = base_import(*args, **kwargs)
     if m.__name__ == "zof.controller" and not getattr(m, sentinal, None):
         m._handle_alert = _patch
