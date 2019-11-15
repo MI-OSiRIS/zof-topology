@@ -1,6 +1,43 @@
+
+# Temporary monkey patch for ZoF bug
+import builtins, uuid
+base_import, sentinal = builtins.__import__, str(uuid.uuid4())
+def _patch(self, message):
+    from zof import exception as _exc
+    """Called when `OFP.MESSAGE` is received with type 'CHANNEL_ALERT'."""
+    # First check if this alert was sent in response to something we said.
+    msg_xid = message['xid']
+    if msg_xid and self._handle_xid(message, msg_xid,
+                                  _exc.DeliveryException):
+        return
+    # Otherwise, we need to report it.
+    msg = message['msg']
+    data_hex = msg['data']
+    data_len = len(data_hex) / 2
+    if len(data_hex) > 100:
+        data_hex = '%s...' % data_hex[:100]
+    LOGGER.warning(
+        'Alert: %s data=%s (%d bytes) [conn_id=%s, datapath_id=%s, xid=%d]',
+        msg.get('alert', '#UNKNOWN#'), data_hex, data_len, message.get('conn_id'. "#UNKNOWN#"),
+        message.get('datapath_id', "#UNKNOWN#"), msg_xid)
+    
+    for app in self.apps:
+        app.handle_event(message, 'message')
+
+def patch_inport(*args, **kwargs):
+    m = base_import(*args, **kwargs)
+    if m.__name__ == "zof.controller" and not getattr(m, sentinal, None):
+        m._handle_alert = _patch
+        setattr(m, sentinal, True)
+    return m
+builtins.__import__ = patch_import
+# End monkey patch
+
+
 import zof
 import warnings
 import json
+
 
 import .config
 
