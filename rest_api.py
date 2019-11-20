@@ -57,6 +57,40 @@ async def post_flows(dpid, post_data):
     return {dpid: result}
 
 
+@WEB.post('/stats/flowentry/add', 'json')
+async def post_flowentry(post_data):
+    dpid = post_data['dpid']
+    actions = []
+    for v in post_data['actions']:
+        actions.append({"action": v['type'], **v})
+        del actions[-1]['type']
+    result = await zof.compile({
+        "type": "FLOW_MOD",
+        "version": "1.3",
+        "msg": {
+            "cookie": 0,
+            "cookie_mask": 0xFFFFFFFFFFFFFFFF,
+            "table_id": 0,
+            "command": "ADD",
+            "idle_timeout": 10,
+            "hard_timeout": 30,
+            "priority": post_data['priority'],
+            "buffer_id": "NO_BUFFER",
+            "out_port": "ANY",
+            "out_group": "ANY",
+            "flags": ["SEND_FLOW_REM", "CHECK_OVERLAP" ],
+            "match": {{"field": k.upper(), "value": v} for k,v in post_data['match']},
+            "instructions": [
+                {
+                    "instruction": "APPLY_ACTIONS",
+                    "actions": actions
+                }
+            ]
+        }
+    }).request(datapath_id=_parse_dpid(dpid))
+    
+    return {dpid: result['msg']}
+
 @WEB.get('/stats/groupdesc/{dpid}', 'json')
 async def get_groupdesc(dpid):
     result = await GROUPDESC_REQ.request(datapath_id=_parse_dpid(dpid))
