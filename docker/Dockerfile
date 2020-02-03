@@ -1,13 +1,9 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 MAINTAINER OpenLab <gskipper@indiana.edu>
 
 RUN apt-get update
 RUN apt-get -y install vim sudo software-properties-common
-
-
-RUN add-apt-repository ppa:jonathonf/python-3.6
-RUN apt-get update
 
 RUN set -ex \
     && buildDeps=' \
