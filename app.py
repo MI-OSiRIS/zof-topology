@@ -1,7 +1,6 @@
 
 # Temporary monkey patch for ZoF bug
-import builtins, uuid
-base_import, sentinal = builtins.__import__, str(uuid.uuid4())
+from zof.controller import Controller
 def _patch(self, message):
     from zof import exception as _exc
     """Called when `OFP.MESSAGE` is received with type 'CHANNEL_ALERT'."""
@@ -16,21 +15,14 @@ def _patch(self, message):
     data_len = len(data_hex) / 2
     if len(data_hex) > 100:
         data_hex = '%s...' % data_hex[:100]
-    LOGGER.warning(
+    zof.controller.LOGGER.warning(
         'Alert: %s data=%s (%d bytes) [conn_id=%s, datapath_id=%s, xid=%d]',
         msg.get('alert', '#UNKNOWN#'), data_hex, data_len, message.get('conn_id', "#UNKNOWN#"),
         message.get('datapath_id', "#UNKNOWN#"), msg_xid)
     
     for app in self.apps:
         app.handle_event(message, 'message')
-
-def patch_import(*args, **kwargs):
-    m = base_import(*args, **kwargs)
-    if m.__name__ == "zof.controller" and not getattr(m, sentinal, None):
-        m._handle_alert = _patch
-        setattr(m, sentinal, True)
-    return m
-builtins.__import__ = patch_import
+Controller._handle_alert = _patch
 # End monkey patch
 
 
@@ -41,7 +33,6 @@ import argparse
 
 import config, rest_api
 
-from pprint import pprint
 from sdn_handler import *
 from registration_handler import *
 from collections import defaultdict
@@ -149,6 +140,9 @@ def channel_up(event):
     APP.logger.info("Inserting OUTPUT_NORMAL_FLOW")
     OUTPUT_NORMAL_FLOW.send()
 
+    APP.logger.info("Inserting FORWARD_TABLE_1")
+    FORWARD_TABLE_1.send()
+    
     APP.logger.info("Inserting LLDP_FLOW")
     LLDP_FLOW.send()
     
@@ -159,7 +153,7 @@ OUTPUT_NORMAL_FLOW = zof.compile('''
   type: FLOW_MOD
   msg:
     command: ADD
-    table_id: 0
+    table_id: 1
     priority: 0
     instructions:
       - instruction: APPLY_ACTIONS
@@ -169,12 +163,24 @@ OUTPUT_NORMAL_FLOW = zof.compile('''
             max_len: NO_BUFFER
 ''')
 
+FORWARD_TABLE_1 = zof.compile('''
+  # Forward general traffic to table 1
+  type: FLOW_MOD
+  msg:
+    command: ADD
+    table_id: 0
+    priority: 0
+    instructions:
+      - instruction: GOTO_TABLE
+        table_id: 1
+''')
+
 LLDP_FLOW = zof.compile('''
   # Add permanent table miss flow entry to table 0
   type: FLOW_MOD
   msg:
     command: ADD
-    table_id: 0
+    table_id: 1
     priority: 1 
     match:
       - field: ETH_TYPE 
