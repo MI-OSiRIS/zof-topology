@@ -69,7 +69,7 @@ async def post_flowentry(post_data):
         "msg": {
             "cookie": 0,
             "cookie_mask": 0xFFFFFFFFFFFFFFFF,
-            "table_id": 0,
+            "table_id": post_data.get('table', 0),
             "command": "ADD",
             "priority": post_data['priority'],
             "buffer_id": "NO_BUFFER",
@@ -83,7 +83,7 @@ async def post_flowentry(post_data):
                 },
                 {
                     "instruction": "GOTO_TABLE",
-                    "table_id": 1
+                    "table_id": post_data.get('goto_table', 1)
                 }
             ]
         }
@@ -103,8 +103,8 @@ async def post_flowentry_modify(post_data):
         "msg": {
             "cookie": 0,
             "cookie_mask": 0xFFFFFFFFFFFFFFFF,
-            "table_id": 0,
-            "command": "MODIFY",
+            "table_id": post_data.get('table', 0),
+            "command": "MODIFY_STRICT",
             "priority": post_data['priority'],
             "buffer_id": "NO_BUFFER",
             "out_port": "ANY",
@@ -114,8 +114,37 @@ async def post_flowentry_modify(post_data):
                 {
                     "instruction": "APPLY_ACTIONS",
                     "actions": actions
+                },
+                {
+                    "instruction": "GOTO_TABLE",
+                    "table_id": post_data.get('goto_table', 1)
                 }
             ]
+        }
+    }).send(datapath_id=_parse_dpid(dpid))
+    
+    return {dpid: "SUCCESS"}
+
+@WEB.post('/stats/flowentry/delete', 'json')
+async def post_flowentry_delete(post_data):
+    dpid = post_data['dpid']
+    actions = []
+    for v in post_data['actions']:
+        actions.append({"action": v['type'], **v})
+        del actions[-1]['type']
+    zof.compile({
+        "type": "FLOW_MOD",
+        "msg": {
+            "cookie": 0,
+            "cookie_mask": 0xFFFFFFFFFFFFFFFF,
+            "table_id": post_data.get('table', 0),
+            "command": "DELETE_STRICT",
+            "priority": post_data['priority'],
+            "buffer_id": "NO_BUFFER",
+            "out_port": "ANY",
+            "out_group": "ANY",
+            "match": [{"field": k.upper(), "value": v} for k,v in post_data['match'].items()],
+            "instructions": []
         }
     }).send(datapath_id=_parse_dpid(dpid))
     
