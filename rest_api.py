@@ -128,11 +128,7 @@ async def post_flowentry_modify(post_data):
 @WEB.post('/stats/flowentry/delete', 'json')
 async def post_flowentry_delete(post_data):
     dpid = post_data['dpid']
-    actions = []
-    for v in post_data['actions']:
-        actions.append({"action": v['type'], **v})
-        del actions[-1]['type']
-    zof.compile({
+    result = zof.compile({
         "type": "FLOW_MOD",
         "msg": {
             "cookie": 0,
@@ -146,7 +142,8 @@ async def post_flowentry_delete(post_data):
             "match": [{"field": k.upper(), "value": v} for k,v in post_data['match'].items()],
             "instructions": []
         }
-    }).send(datapath_id=_parse_dpid(dpid))
+    })
+    result.send(datapath_id=_parse_dpid(dpid))
     
     return {dpid: "SUCCESS"}
 
