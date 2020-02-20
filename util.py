@@ -149,16 +149,12 @@ class UnisUtil(object):
                 print("Port found in UNIS, but not in Node, adding it to node.")
                 node.ports.append(port)
 
-        port.address = {
-                    "type":"mac",
-                    "address":dp_msg['pkt']['x_lldp_port_id'][3:]
-                }
-        port.properties = {
-                    "type":"vport",
-                    "vport_number":dp_msg['in_port']
-                }
-
-
+        if not hasattr(port, 'address'): port.address = {}
+        if not hasattr(port, 'properties'): port.properties = {}
+        port.address.type = "mac"
+        port.address.address = dp_msg['pkt']['x_lldp_port_id'][3:]
+        port.properties.type = "vport"
+        port.properties.vport_number = dp_msg['in_port']
         return port
     
     def find_port_in_node_by_port_num(self, node, port_num):
